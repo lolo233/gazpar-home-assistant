@@ -8,7 +8,7 @@ import voluptuous as vol
 from homeassistant.components.sensor import PLATFORM_SCHEMA, SensorEntity, STATE_CLASS_TOTAL_INCREASING
 from homeassistant.const import (
     CONF_PASSWORD, CONF_USERNAME,
-    VOLUME_CUBIC_METERS, ENERGY_KILO_WATT_HOUR, DEVICE_CLASS_ENERGY)
+    VOLUME_CUBIC_METERS, ENERGY_KILO_WATT_HOUR, DEVICE_CLASS_ENERGY, DEVICE_CLASS_GAS)
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.event import track_time_interval, call_later
 
@@ -61,8 +61,8 @@ class GazparAccount:
         call_later(hass, 5, self.update_gazpar_data)
 
         # Add sensors
-        self.sensors.append(GazparSensor(HA_INDEX_ENERGY_KWH, ENERGY_KILO_WATT_HOUR))
-        self.sensors.append(GazparSensor(HA_INDEX_ENERGY_M3, VOLUME_CUBIC_METERS))
+        self.sensors.append(GazparSensor(HA_INDEX_ENERGY_KWH, ENERGY_KILO_WATT_HOUR, DEVICE_CLASS_ENERGY))
+        self.sensors.append(GazparSensor(HA_INDEX_ENERGY_M3, VOLUME_CUBIC_METERS, DEVICE_CLASS_GAS))
 
         track_time_interval(hass, self.update_gazpar_data, DEFAULT_SCAN_INTERVAL)
 
@@ -96,13 +96,13 @@ class GazparAccount:
 class GazparSensor(SensorEntity):
     """Representation of a sensor entity for Gazpar."""
 
-    def __init__(self, name, unit):
+    def __init__(self, name, unit, device_class):
         """Initialize the sensor."""
         self._name = name
         self._unit = unit
         self._measure = None
         self._attr_state_class = STATE_CLASS_TOTAL_INCREASING
-        self._attr_device_class = DEVICE_CLASS_ENERGY
+        self._attr_device_class = device_class
 
     @property
     def name(self):
